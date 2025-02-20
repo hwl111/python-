@@ -174,25 +174,168 @@ def scode3(schoice):                       #生成25位混合产品序列号函�
     #调用wfile()函数实现防伪码在屏幕输出和文件输出
     wfile(randstr, "scode" + str(schoice) + ".txt", "", "已生成25位混合产品序列号共计：","codepath")
 
-def scode4():
-    pass
+def scode4(schoice):        #生成含数据分析功能防伪编码参数
+    intype = inputbox("\033[1;32m    请输入数据分析编号(3位字母)：\33[0m", 2, 3)
+    #验证输入是否是三个字母
+    while not str.isalpha(intype) or len(intype) != 3:
+        intype = inputbox("\033[1;32m    请输入数据分析编号(3位字母)：\33[0m", 2, 3)
+    incount = inputbox("\033[1;32m    请输入要生成的带数据分析功能的防伪码数量：\33[0m", 1, 0)
+    #验证输入是否大于0
+    while int(incount) == 0:
+        incount = inputbox("\033[1;32m    请输入要生成的带数据分析功能的防伪码数量：\33[0m", 1, 0)
+    ffcode(incount, intype, "", schoice)         #调用ffcode()函数生成防伪码
 
-def scode5():
-    pass
+# 生成含数据分析功能防伪编码函数，参数scount为要生成的防伪码数量，typestr为数据分析字符
+# 参数ismessage在输出完成时是否显示提示信息，为“no”不显示，为其他值显示；参数schoice设置输出的文件名称
+def ffcode(scount, typestr,ismessage, schoice):
+    randstr.clear()  # 清空保存批量注册码信息的变量randstr
+    # 按数量生成含数据分析功能注册码
+    for j in range(int(scount)):
+        strpro = typestr[0].upper()    # 取得三个字母中的第一个字母，并转为大写，区域分析码
+        strtype = typestr[1].upper()   # 取得三个字母中的第二个字母，并转为大写，颜色分析码
+        strclass = typestr[2].upper()  # 取得三个字母中的第三个字母，并转为大写，版本分析码
+        randfir = random.sample(number, 3)  # 随机抽取防伪码中的三个位置，不分先后
+        randsec = sorted(randfir)  # 对抽取的位置进行排序并存储给randsec变量，以便按顺序排列三个字母的位置
+        letterone = ""    # 清空存储单条防伪码的变量letterone
+        for i in range(9):  # 生成9位的数字防伪码
+            letterone = letterone + random.choice(number)
+        # 将三个字母按randsec变量中存储的位置值添加到数字防伪码中，并放到sim变量中
+        sim = str(letterone[0:int(randsec[0])]) + strpro + str(
+            letterone[int(randsec[0]):int(randsec[1])]) + strtype + str(
+            letterone[int(randsec[1]):int(randsec[2])]) + strclass + str(letterone[int(randsec[2]):9]) + "\n"
+        randstr.append(sim)   # 将组合生成的新防伪码添加到randstr变量
+    # 调用wfile()函数，实现生成的防伪码屏幕输出和文件输出
+    wfile(randstr, typestr + "scode" + str(schoice) + ".txt", ismessage, "生成含数据分析防伪码共计：","codepath")
 
-def scode6():
-    pass
+#智能批量生产带数据分析功能的防伪码
+def scode5(schoice):
+    default_dir = r"codeauto.mri"   #设置默认打开的文件名
+    # 打开文件选择对话框，指定打开的文件名称为"mrsoft.mri" ，扩展名为“mri”，可以使用记事本打开和编辑
+    file_path = tkinter.filedialog.askopenfilename(filetypes=[("Text file", "*.mri")],
+                                                   title=u"请选择自动防伪码智能批处理文件：",
+                                                   initialdir=(os.path.expanduser(default_dir)))
+    codelist = openfile(file_path)
+    #以换行符为分隔符将读取的幸喜转换成列表
+    codelist = codelist.split("\n")
+    print(codelist)
+    for item in codelist:
+        codea = item.split(",")[0]
+        codeb = item.split(",")[1]
+        ffcode(codeb, codea, "no", schoice)
 
-def scode7():
-    pass
+#实现防伪码的补充生成功能,避免生成的防伪码重复
+def scode6(schoice):
+    default_dir = r"c:\ABDscode5.txt"  #设置默认打开文件名称
+    # 按默认的文件名称打开文件选择对话框，用于打开已经存在的防伪码文件
+    file_path = tkinter.filedialog.askopenfilename(title=u"请选择已经生成的防伪码文件",
+                                                   initialdir=(os.path.expanduser(default_dir)))
+    codelist = openfile(file_path)
+    codelist = codelist.split("\n")
+    codelist.remove("")    #删除列表中的空行
+    strset = codelist[0]   #读取一行数据,以便获取原验证码的字母标注信息
+    #用makestrans()方法创建删除数字的字符映射转换表
+    remove_digits = str.maketrans("", "", digits)
+    #用translate()方法删除数字
+    res_leter = strset.translate(remove_digits)
+    nres_letter = list(res_leter)
+    strpro = nres_letter[0]
+    strtype = nres_letter[1]
+    strclass = nres_letter[2]
+    #去除信息中的括号和引号
+    nres_letter = strpro.replace(''''','').replace(''''', '') + strtype.replace(
+        ''''','').replace(''''', '') + strclass.replace(''''','').replace(''''', '')
+    card = set(codelist)
+    #利用tkinter的messagebox提示用户之前生成的防伪码数量
+    tkinter.messagebox.showinfo("提示", "原验证码共计" + str(len(card)))
+    root.withdraw()  #关闭提示信息框
+    incount = inputbox("请输入补充生成防伪码数量:", 1, 0)
+    #最大输入生成数量2倍的新防伪码
+    for j in range(int(incount) * 2):
+        randfir = random.sample(number, 3)
+        randsec = sorted(randfir)
+        addcount = len(card)
+        strone = ""
+        for i in range(9):
+            strone = strone + random.choice(number)
+            # 将三个字母按randsec变量中存储的位置值添加到数字防伪码中，并放到sim变量中
+            sim = str(strone[0:int(randsec[0])]) + strpro + str(
+                strone[int(randsec[0]):int(randsec[1])]) + strtype + str(
+                strone[int(randsec[1]):int(randsec[2])]) + strclass + str(strone[int(randsec[2]):9]) + "\n"
+            card.add(sim)
+            if len(card) > addcount:
+                randstr.append(sim)
+                addcount = len(card)
+            if len(card) >= int(incount):
+                print(len(randstr))
+                break
+        # 调用wfile()函数，实现生成的防伪码屏幕输出和文件输出
+    wfile(randstr, nres_letter + "ncode" + str(choice) + ".txt", nres_letter, "生成后补防伪码共计：", "codeadd")
 
-def scode8():
-    pass
+#实现条形码的输出
+def scode7(schoise):
+    mainid = inputbox("\033[1;32m     请输入EN13的国家代码（3位） :\33[0m", 3, 3)  # 输入3位国家代码
+    while int(mainid) < 1 or len(mainid) != 3:   # 验证输入是否为3位数字（转为整数后小于1和长度不等于3，重新输入）
+         mainid = inputbox("\033[1;32m     请输入EAN13的国家代码（3位）::\33[0m", 1, 0)
+    compid = inputbox("\033[1;32m     请输入EAN13的企业代码（4位）:\33[0m", 3, 4)  # 输入4位企业代码
+    while int(compid) < 1 or len(compid) != 4:   # 验证输入是否为4位数字
+         compid = inputbox("\033[1;32m     请输入EAN13的企业代码（4位）:\33[0m", 1, 0)
+    incount = inputbox("\033[1;32m     请输入要生成的条形码数量:\33[0m", 1, 0)  # 输入要生成的条形码数量
+    while int(incount) == 0:  # 输入信息转为整数后等于0，重新输入
+        incount = inputbox("\033[1;32m     请输入要生成的条形码数量:\33[0m", 1, 0)
+    mkdir("barcode")  # 判断保存条形码的文件夹是否存在，不存在，则创建该文件夹
+    for j in range(int(incount)):  # 批量生成条形码
+        strone = ''  # 清空存储单条条形码的变量
+        for i in range(5):  # 生成条形码的6位（除国家代码、企业代码和校验位之外的6位）数字
+            strone = strone + str(random.choice(number))
+        barcode = mainid + compid + strone  # 把国家代码、企业代码和新生成的随机码进行组合
+        # 计算条形码的校验位
+        evensum = int(barcode[1]) + int(barcode[3]) + int(barcode[5]) + int(barcode[7]) + int(barcode[9]) + int(
+            barcode[11])  # 偶数位
+        oddsum = int(barcode[0]) + int(barcode[2]) + int(barcode[4]) + int(barcode[6]) + int(barcode[8]) + int(
+            barcode[10])
+        # checkbit=int(10-(evensum *3 + oddsum)%10)
+        checkbit = int((10 - (evensum * 3 + oddsum) % 10) % 10)
+        barcode = barcode + str(checkbit)  # 组成完整的EAN13条形码的13位数字
+        print(barcode)
+        encoder = EAN13Encoder(barcode)  # 调用EAN13Encoder生成条形码
+        encoder.save("barcode\\" + barcode + ".png")  # 保存条形码信息图片到文件
 
-def scode9():
-    pass
+#实现二维码的打印和输出
+def scode8(schoice):
+    #输入要生成的二维码的数量
+    incount = inputbox("\033[1;32m     请输入要生成12位数字的二维码数量:\33[0m", 1, 0)
+    while int(incount) == 0:
+        incount = inputbox("\033[1;32m     请输入要生成12位数字的二维码数量:\33[0m", 1, 0)
+    mkdir("qrcode")
+    for j in range(int(incount)):
+        strone = ""
+        for i in range(12):
+            strone = strone + str(random.choice(number))
+        encoder = qrcode.make(strone)  #生成二维码
+        encoder.save("qrcode\\" + strone + ".png") #保存二维码到图片
 
-# 企业编码管理系统主菜单
+
+#实现粉丝企业抽奖
+def scode9(schoice):
+    default_dir = r"lottery.ini"  #设置默认打开文件位项目路径下的"lottery.ini"
+    #选择包含用户抽奖信息票号的文件,扩展名为”.ini“
+    file_path = tkinter.filedialog.askopenfilename(filetypes=[("Ini file","*.ini")],
+                                                   title=u"请选择包含抽奖号码的抽奖文件:",initialdir=(os.path.expanduser(default_dir)))
+    codelist = openfile(file_path)
+    codelist = codelist.split("\n")
+    #要求用户输入抽奖数量
+    incount = inputbox("\033[1;32m     请输要生成的抽奖数量:\33[0m", 1, 0)
+    while int(incount) == 0:
+        incount = inputbox("\033[1;32m     请输要生成的抽奖数量:\33[0m", 1, 0)
+    strone = random.sample(codelist, int(incount))
+    for i in range(int(incount)):
+        #将抽奖列表中的括号去掉
+        wdata = str(strone[i].replace('[', '')).replace(']', '') # 将抽奖数列的中括号去掉
+        #将抽奖列表中的引号去掉
+        wdata = wdata.replace(''''','').replace(''''', '')  # 将抽奖数列的引号去掉
+        print("\033[1;32m         " + wdata + "\33[0m")  # 输出中奖信息
+
+        # 企业编码管理系统主菜单
 def mainmenu():
     # os.system("clear")
     print("""\033[1;35m
@@ -242,7 +385,7 @@ while i < 9:
             scode6(choice)
         # 选择菜单7,调用scode7()函数批量生成条形码
         if choice == 7:
-          scode7( choice)
+            scode7( choice)
         # 选择菜单8,调用scode8()函数批量生成二维码
         if choice == 8:
             scode8( choice)
