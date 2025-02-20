@@ -104,16 +104,20 @@ def wfile(sstr, sfile, typeis, smsg, datapath):
         root.withdraw()  # 关闭辅助窗口
 # 实现屏幕输出和文件输出编码信息，参数schoice设置输出的文件名称
 
+# 输入数字验证，判断输入是否在0-9之间的整数
 def input_validation(insel):
     if str.isdigit(insel):
-        if insel == 0:
-            print("\033[1;31;40m    输入非法,请重新输入!!!\ 033[0m")
-            return 0
-        else:
-            return insel
+        insel = int(insel)
+        # if insel == 0:
+        #     # print("\033[1;31;40m    输入非法，请重新输入！！\033[0m")
+        #     return 0
+        # else:
+        #     return insel
+        return insel
     else:
-        print("\033[1;31;40m    输入非法,请重新输入!!!\ 033[0m")
+        print("\033[1;31;40m       输入非法，请重新输入！！\033[0m")
         return 0
+
 
 def scode1( schoice):
     # 调用inputbox函数对输入数据进行非空、输入合法性判断
@@ -150,9 +154,43 @@ def scode2(schoice):
             #将生成的单条防伪码添加到防伪码列表
             randstr.append(str(int(ordstart) + m) + randfir + "\n")
     #调用wfile()函数实现防伪码在屏幕输出和文件输出
-    wfile(randstr, "scode", str(choice) + ".txt","", "已生成9位系列防伪码共计:","codepath")
+    wfile(randstr, "scode" + str(schoice) + ".txt", "", "已生成9位系列产品防伪码共计：","codepath")
 
 
+def scode3(schoice):                       #生成25位混合产品序列号函数,参数schoice设置输出文件名称
+    #输入要生成的防伪码数量
+    incount = inputbox("\033[1;32m    请输入要生成的25位混合产品序列号数量：\33[0m", 1, 0)
+    while int(incount) == 0:
+        incount = inputbox("\033[1;32m    请输入要生成的25位混合产品序列号数量：\33[0m", 1, 0)
+    randstr.clear()
+    for j in range(int(incount)):
+        strone = ""           #保存生成的单条防伪码,不带横线"-",循环时清空
+        for i in range(25):
+            #每次产生一个随机因子,也就是每次生成单条防伪码一位
+            strone = strone +random.choice(letter)
+        #将生成的防伪码隔5位添加'-'
+        strtwo = strone[:5] + "-" + strone[5:10] + "-" + strone[10:15] + "-" + strone[15:20] + "-" + strone[20:25] + "\n"
+        randstr.append(strtwo)  #将生成的单条防伪码添加到防伪码列表
+    #调用wfile()函数实现防伪码在屏幕输出和文件输出
+    wfile(randstr, "scode" + str(schoice) + ".txt", "", "已生成25位混合产品序列号共计：","codepath")
+
+def scode4():
+    pass
+
+def scode5():
+    pass
+
+def scode6():
+    pass
+
+def scode7():
+    pass
+
+def scode8():
+    pass
+
+def scode9():
+    pass
 
 # 企业编码管理系统主菜单
 def mainmenu():
