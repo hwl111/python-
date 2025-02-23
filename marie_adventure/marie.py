@@ -2,6 +2,7 @@ import pygame
 import sys
 from pygame.locals import *
 from itertools import cycle   #导入迭代工具
+import random
 
 SCREENWIDTH = 822   #窗口宽度
 SCREENHEIGHT = 199  #窗口高度
@@ -67,6 +68,76 @@ class Marie():
         SCREEN.blit(self.adventure_img[marieIndex],
                     (self.x, self.rect.y))
 
+#障碍物类
+class Obstacle():
+    score = 1    #分数
+    move = 2     #移动距离
+    obstacle_y = 150   #障碍物的y坐标
+    def __init__(self):
+        #初始化障碍物矩形
+        self.rect = pygame.Rect(0, 0, 0, 0)
+        #加载障碍物图片
+        self.missile = pygame.image.load("image/missile.png")
+        self.pipe = pygame.image.load("image/pipe.png")
+        #加载分数图片
+        self.numbers = (pygame.image.load("image/0.png").convert_alpha(),
+                        pygame.image.load("image/1.png").convert_alpha(),
+                        pygame.image.load("image/2.png").convert_alpha(),
+                        pygame.image.load("image/3.png").convert_alpha(),
+                        pygame.image.load("image/4.png").convert_alpha(),
+                        pygame.image.load("image/5.png").convert_alpha(),
+                        pygame.image.load("image/6.png").convert_alpha(),
+                        pygame.image.load("image/7.png").convert_alpha(),
+                        pygame.image.load("image/8.png").convert_alpha(),
+                        pygame.image.load("image/9.png").convert_alpha())
+        #加载加分音效
+        self.score_audio = pygame.mixer.Sound("audio/score.wav")
+        r = random.randint(0, 1)
+        if r == 0:
+            self.image = self.missile  #显示导弹障碍物
+            self.move = 5
+            self.obstacle_y = 100   #导弹在天上
+        else:
+            self.image = self.pipe  #显示管道障碍物
+        #根据障碍物的宽高来设置矩阵
+        self.rect.size = self.image.get_size()
+        self.width, self.height = self.rect.size
+        self.x = 800
+        self.y = self.obstacle_y
+        self.rect.center = (self.x, self.y)
+    def obstacle_move(self):
+        self.rect.x -= self.move
+    def draw_obstacle(self):
+        SCREEN.blit(self.image, (self.rect.x, self.rect.y))
+
+class Music_Button():
+    is_open = True
+    def __init__(self):
+        self.open_img = pygame.image.load("image/btn_open.png").convert_alpha()
+        self.close_img = pygame.image.load("image/btn_close.png").convert_alpha()
+        self.bg_music = pygame.mixer.Sound("audio/bg_music.wav")
+    #判断鼠标是否在按钮上
+    def is_selcect(self):
+        point_x, point_y = pygame.mouse.get_pos()
+        w, h = self.open_img.get_size()
+        int_x = point_x > 20 and point_x < 20 + w
+        int_y = point_y > 20 and point_y < 20 + h
+        return int_x and int_y
+
+
+#计算障碍物的时间间隔
+def add_obstacle(obstacle_list,add_obstacle_time):
+    if add_obstacle_time >= 1500:
+        r = random.randint(0, 100)
+        if r > 40:
+            obstacle = Obstacle()
+            obstacle_list.append(obstacle)
+            return True
+    for i in range(len(obstacle_list)):
+        obstacle_list[i].obstacle_move()
+        obstacle_list[i].draw_obstacle()
+
+
 def main_game():
     score = 0  #得分
     game_over= False  #游戏结束标志
@@ -83,6 +154,14 @@ def main_game():
     bg2 = MyMap(800, 0)
     #创建玛丽
     marie = Marie()
+    #添加障碍物的时间
+    add_obstacle_time = 0
+    #障碍物对象列表
+    obstacle_list = []
+    #创建音乐按钮
+    music_button = Music_Button()
+    btn_img = music_button.open_img
+    music_button.bg_music.play(-1)  #循环播放背景音乐
 
     while True:
         #获取单机事件
@@ -96,6 +175,16 @@ def main_game():
                 if marie.rect.y >= marie.lowest_y:
                     marie.jump_audio.play()
                     marie.jump()
+            if event.type == pygame.MOUSEBUTTONUP:
+                if music_button.is_selcect():
+                    if music_button.is_open:
+                        btn_img = music_button.close_img
+                        music_button.is_open = False
+                        music_button.bg_music.stop()
+                    else:
+                        btn_img = music_button.open_img
+                        music_button.is_open = True
+                        music_button.bg_music.play(-1)
 
         #无限循环滚动地图
         if game_over == False:
@@ -110,6 +199,13 @@ def main_game():
             marie.move()
             #玛丽绘制
             marie.draw()
+
+        add_obstacle(obstacle_list,add_obstacle_time)
+        add_obstacle_time += 20
+        if add_obstacle(obstacle_list,add_obstacle_time):
+            add_obstacle_time = 0       #重置时间
+
+        SCREEN.blit(btn_img, (20, 20))  #绘制音乐按钮
 
         pygame.display.update()  #更新整个窗体
         FPS_CLOCK.tick(FPS)
